@@ -1,8 +1,17 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 
 from .models import Topic, Entry
 from .forms import TopicForm, EntryForm
+
+
+# Util Functions
+def _check_topic_owner(request, topic):
+    """Checks to see if the user is the owner of the topic and raises throws a 404 if the user isnt."""
+
+    if topic.owner != request.user:
+        raise Http404
 
 
 # Create your views here.
@@ -26,6 +35,10 @@ def topics(request):
 def topic(request, topic_id):
     """Show a single topic and all its entries."""
     topic = Topic.objects.get(id=topic_id)
+
+    # Make sure the topic belongs to the current user.
+    _check_topic_owner(request, topic)
+
     entries = topic.entry_set.order_by("-date_added")
     context = {"topic": topic, "entries": entries}
 
@@ -42,7 +55,9 @@ def new_topic(request):
         # POST data submitted; process data.
         form = TopicForm(data=request.POST)
         if form.is_valid():
-            form.save()
+            new_topic = form.save(commit=False)
+            new_topic.owner = request.user
+            new_topic.save()
             return redirect("learning_logs:topic")
 
     # Display a blank or invalid form.
@@ -53,6 +68,9 @@ def new_topic(request):
 def new_entry(request, topic_id):
     """Add a new entry."""
     topic = Topic.objects.get(id=topic_id)
+
+    # Check that the user owns the topic.
+    _check_topic_owner(request, topic)
 
     if request.method != "POST":
         # No data submitted; create a blank form.
@@ -75,6 +93,9 @@ def edit_entry(request, entry_id):
     """Edit and existing entry."""
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic
+
+    # Check that the current user is the owner
+    _check_topic_owner(request, topic)
 
     if request.method != "POST":
         # Initital request; pre-fill form with the current entry.
