@@ -34,7 +34,10 @@
             <span class="navbar-text">Hello, {{ user.username }}</span>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'users:logout' %}">Log Out</a>
+            <form method="post" action="{% url 'users:logout' %}"> 
+              {% csrf_token %} 
+              <button type="submit" class="btn btn-link">Logout</button> 
+            </form> 
           </li> 
           {% else %}
           <li class="nav-item">
@@ -56,22 +59,6 @@
         {% block content %}{% endblock content %}
       </div>
     </main>
-
-    <!-- <p> -->
-    <!--   <a href="{% url 'learning_logs:index' %}">Learning Log</a> - -->
-    <!--   <a href="{% url 'learning_logs:topics' %}">Topics</a> - -->
-    <!--   {% if user.is_authenticated %} -->
-    <!--   Hello, {{ user.username }} -->
-    <!--   <!-- <a href="{% url 'users:logout' %}">Log out</a> --> -->
-    <!-- <form method="post" action="{% url 'users:logout' %}"> -->
-    <!--   {% csrf_token %} -->
-    <!--   <button type="submit">logout</button> -->
-    <!-- </form> -->
-    <!-- {% else %} -->
-    <!-- <a href="{% url 'users:register' %}">Register</a> -->
-    <!-- <a href="{% url 'users:login' %}">Log in</a> -->
-    <!-- {% endif %} -->
-    <!-- </p> -->
   </body>
 
 </html>
